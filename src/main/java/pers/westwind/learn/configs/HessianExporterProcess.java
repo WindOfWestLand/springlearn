@@ -42,13 +42,13 @@ public class HessianExporterProcess implements ApplicationContextAware, BeanPost
     }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        ConfigurableApplicationContext context = (ConfigurableApplicationContext) HessianExporterProcess.context;
+        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context
+                .getBeanFactory();
+
         Annotation[] annotations = bean.getClass().getAnnotations();
         for(Annotation annotation : annotations) {
             if(annotation.annotationType().equals(HessianExporter.class)) {
-                ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) context;
-                BeanDefinitionRegistry registry = (BeanDefinitionRegistry) configurableApplicationContext
-                        .getBeanFactory();
-
                 String exportName = registerHessianServiceExporter(registry, (HessianExporter) annotation, bean);
                 registerMapping(registry, (HessianExporter) annotation, exportName);
             }
@@ -56,8 +56,10 @@ public class HessianExporterProcess implements ApplicationContextAware, BeanPost
         return bean;
     }
 
-    private String registerHessianServiceExporter(BeanDefinitionRegistry registry, HessianExporter annotation, Object bean) {
-        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(HessianServiceExporter.class);
+    private String registerHessianServiceExporter(
+            BeanDefinitionRegistry registry, HessianExporter annotation, Object bean) {
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder
+                .genericBeanDefinition(HessianServiceExporter.class);
         AbstractBeanDefinition abd = builder.getRawBeanDefinition();
 
         MutablePropertyValues values = new MutablePropertyValues();
